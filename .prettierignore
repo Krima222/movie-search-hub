@@ -2,3 +2,4 @@ node_modules
 .next
 .eslintrc.json
 styles/reset.css
+.env
