@@ -1,20 +1,42 @@
-import { useData } from '../hooks/useData';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-import { Layout } from './Layout/Layout';
-import { Card } from './Card/Card';
+import { useMovies } from '../api/movies/useMovies';
+
+import { MainPage } from '../pages/Main/MainPage';
+import { SingleMoviePage } from '../pages/SingleMoviePage/SingleMoviePage';
+import { useState } from 'react';
 
 export function App() {
-  const { movies } = useData(10);
-  console.log(movies);
+  const [count, setCount] = useState(10);
+  const [year, setYear] = useState(2000);
+  const [age, setAge] = useState('12-18');
+  const [countrie, setCountrie] = useState('Россия');
+  const { data } = useMovies({
+    count,
+    year,
+    age,
+    countrie,
+  });
+
+  console.log(data);
 
   return (
-    <Layout>
-      <div>
-        <ul>
-          {movies &&
-            movies.map((movie) => <Card key={movie.id} user={movie} />)}
-        </ul>
-      </div>
-    </Layout>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <MainPage
+              data={data}
+              count={setCount}
+              year={setYear}
+              age={setAge}
+              countrie={setCountrie}
+            />
+          }
+        />
+        <Route path="/movie/:movieid" element={<SingleMoviePage />} />
+      </Routes>
+    </Router>
   );
 }
