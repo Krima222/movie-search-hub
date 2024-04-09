@@ -1,32 +1,40 @@
-import { useQuery } from 'react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import type { Movie } from '../types/movie';
+import type { MoviesResponse } from '../api/movies/schema';
 
-const apiToken = import.meta.env.TOKEN;
+const apiToken = import.meta.env.VITE_API_TOKEN;
 
-export function useData(count: number) {
-  const [movies, setMovies] = useState<Movie[] | null>(null);
+export function useData(count: string) {
+  const [movies, setMovies] = useState<MoviesResponse[]>([]);
 
-  const { refetch } = useQuery<Movie[] | null>(
-    ['movies', count],
-    async () => {
-      const url = `https://api.kinopoisk.dev/v1.4/movie?page=1&limit=${10}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          'X-API-KEY': apiToken,
-        },
-      });
-      const data = await response.json();
-      return data.results;
-    },
-    {
-      refetchOnWindowFocus: false, //которая позволяет автоматически обновлять данные в фоновом режиме при потере фокуса в браузере
-      onSuccess: setMovies,
-    },
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const options = {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            'X-API-KEY': apiToken,
+          },
+        };
+        const response = await fetch(
+          `https://api.kinopoisk.dev/v1.4/movie?page=1&limit=${parseInt(count)}&selectFields=id&selectFields=name&selectFields=poster&selectFields=rating`,
+          options,
+        );
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setMovies(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-  return { movies, refetch };
+    fetchData();
+
+    return () => {};
+  }, [count]);
+
+  return { movies };
 }
